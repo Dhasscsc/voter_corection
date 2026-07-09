@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>வாக்காளர் அட்டை திருத்தப் படிவம் (Form 8)</title>
+    <style>
+        :root {
+            --primary: #2563eb; /* திருத்தப் படிவத்திற்கு பிரகாசமான நீல நிறம் */
+            --secondary: #0ea5e9;
+            --success: #16a34a;
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --border: #cbd5e1;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+        body { background-color: var(--bg); padding: 20px; max-width: 1500px; margin: 0 auto; display: flex; gap: 20px; }
+        
+        .form-container { flex: 1.3; background: var(--surface); padding: 25px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .sidebar { flex: 0.7; background: var(--surface); padding: 25px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); max-height: 90vh; display: flex; flex-direction: column; }
+        
+        header { text-align: center; margin-bottom: 20px; padding: 10px; border-bottom: 2px solid var(--primary); }
+        header h1 { color: var(--primary); font-size: 1.6rem; }
+        
+        h2 { color: white; margin-bottom: 15px; font-size: 1.2rem; background: var(--primary); padding: 6px 10px; border-radius: 4px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px; }
+        .form-group { display: flex; flex-direction: column; gap: 4px; }
+        .full-width { grid-column: span 2; }
+        
+        label { font-weight: 600; font-size: 0.9rem; color: #334155; }
+        input, select, textarea { padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 0.95rem; }
+        input:focus, select:focus, textarea:focus { border-color: var(--primary); outline: none; }
+        
+        /* Checkbox Styling */
+        .correction-options { background: #f1f5f9; padding: 15px; border-radius: 6px; margin-bottom: 15px; border: 1px solid #e2e8f0; }
+        .checkbox-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 8px; }
+        .checkbox-group { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 0.9rem; color: #1e293b; cursor: pointer; }
+        .checkbox-group input { width: 18px; height: 18px; cursor: pointer; }
+
+        button[type="submit"] { padding: 12px; border: none; border-radius: 4px; font-size: 1rem; font-weight: bold; cursor: pointer; color: white; background: var(--primary); width: 100%; }
+        button[type="submit"]:hover { background: #1d4ed8; }
+        
+        .blank-print-box { display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; padding: 10px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 6px; }
+        .btn-blank { background: var(--success); font-size: 0.9rem; padding: 8px; border: none; color: white; border-radius: 4px; cursor: pointer; font-weight: bold; width: 100%; }
+        .btn-blank:hover { background: #15803d; }
+
+        .history-list { overflow-y: auto; flex: 1; margin-top: 10px; display: flex; flex-direction: column; gap: 10px; }
+        .history-item { border: 1px solid var(--border); padding: 12px; border-radius: 6px; background: #f8fafc; cursor: pointer; transition: all 0.2s; }
+        .history-item:hover { border-color: var(--primary); background: #f1f5f9; }
+        .search-box { padding: 8px; margin-bottom: 15px; border: 1px solid var(--border); border-radius: 4px; width: 100%; }
+
+        /* PRINT STYLES - MAXIMUM A4 PAGE COVER */
+        #print-area { display: none; }
+        @media print {
+            @page {
+                size: A4;
+                margin: 6mm 12mm 6mm 12mm;
+            }
+            html, body { background: #fff !important; background-color: #fff !important; width: 100%; height: 100%; }
+            body * { visibility: hidden; }
+            #print-area, #print-area * { visibility: visible; }
+            #print-area { 
+                display: block !important; 
+                position: absolute; 
+                left: 0; 
+                top: 0; 
+                width: 100%;
+                background: #fff !important; 
+                color: #000; 
+            }
+            
+            .p-header { text-align: center; margin-bottom: 12px; line-height: 1.4; }
+            .p-header h1 { font-size: 1.55rem; font-weight: bold; text-decoration: underline; letter-spacing: 0.5px; }
+            
+            .p-table { width: 100%; border-collapse: collapse; margin-top: 5px; font-size: 0.95rem; background: #fff !important; }
+            .p-table th, .p-table td { border: 1px solid #000 !important; padding: 8px 12px !important; text-align: left; vertical-align: middle; background: #fff !important; color: #000 !important; }
+            
+            .p-table td { height: 38px; } 
+            .p-table th { font-weight: bold; text-align: center; background: #f2f2f2 !important; height: 34px; }
+            
+            /* அச்சிடும் போது செலக்ட் செய்த பாக்ஸ்கள் */
+            .p-checkbox-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; padding: 5px 0; }
+            .p-checkbox-item { font-weight: bold; font-size: 0.9rem; display: flex; align-items: center; gap: 6px; }
+            .p-box { width: 15px; height: 15px; border: 1.5px solid #000; display: inline-block; text-align: center; line-height: 13px; font-size: 0.8rem; font-weight: bold; }
+
+            /* முகவரிக்கு 3 வரிசைகள் கோடுகள் */
+            .address-lines { 
+                display: flex; 
+                flex-direction: column; 
+                justify-content: space-between; 
+                height: 90px; 
+                padding: 2px 0;
+                box-sizing: border-box;
+            }
+            .address-line { 
+                border-bottom: 1px dashed #666; 
+                height: 33%; 
+                width: 100%;
+            }
+            .address-line:last-child { border-bottom: none; }
+            .address-text-filled { line-height: 1.4; font-weight: normal; word-break: break-word; }
+            
+            .p-docs { margin-top: 10px; font-size: 0.8rem; border: 1px solid #000 !important; padding: 8px; line-height: 1.4; }
+            .p-decl { margin-top: 8px; font-size: 0.8rem; line-height: 1.4; text-align: justify; border: 1px solid #000 !important; padding: 8px; border-radius: 4px; }
+            
+            .p-footer { display: flex; justify-content: space-between; margin-top: 45px; font-size: 0.95rem; font-weight: bold; }
+            
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-shadow: none !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- LEFT: FORM ENTRY -->
+    <div class="form-container">
+        <header>
+            <h1>வாக்காளர் அடையாள அட்டை திருத்தம் (Form 8)</h1>
+        </header>
+
+        <!-- Correction Selection Boxes -->
+        <div class="correction-options">
+            <label style="color: var(--primary); font-size: 1rem;">🛠️ மாற்றப் பட வேண்டிய விபரங்களைத் தேர்வு செய்க (Select for Correction):</label>
+            <div class="checkbox-grid">
+                <label class="checkbox-group"><input type="checkbox" id="chkName"> பெயர் (Name)</label>
+                <label class="checkbox-group"><input type="checkbox" id="chkDob"> பிறந்த நாள் (DOB/Age)</label>
+                <label class="checkbox-group"><input type="checkbox" id="chkRelative"> தந்தை / கணவர் பெயர்</label>
+                <label class="checkbox-group"><input type="checkbox" id="chkPhoto"> புகைப்படம் (Photo)</label>
+                <label class="checkbox-group"><input type="checkbox" id="chkAddress"> முகவரி (Address)</label>
+                <label class="checkbox-group"><input type="checkbox" id="chkMobile"> செல் நம்பர் (Mobile)</label>
+            </div>
+        </div>
+
+        <h2>புதிய திருத்தப்பட்ட விபரங்கள் (Data Entry)</h2>
+        <form id="voterCorrectionForm">
+            <div class="grid">
+                <div class="form-group">
+                    <label>1. தற்போதைய வாக்காளர் அட்டை எண் (EPIC No):</label>
+                    <input type="text" id="epicNo" required placeholder="உதா: ABC1234567" style="text-transform: uppercase;">
+                </div>
+                <div class="form-group">
+                    <label>2. கைபேசி எண் (Mobile No):</label>
+                    <input type="tel" id="phone" required pattern="[0-9]{10}" placeholder="10 இலக்க எண்">
+                </div>
+
+                <div class="form-group">
+                    <label>3. விண்ணப்பதாரர் பெயர் (திருத்தப்பட்ட புதிய பெயர்):</label>
+                    <input type="text" id="nameTa" placeholder="பெயர் தமிழில் மற்றும் ஆங்கிலத்தில்">
+                </div>
+                <div class="form-group">
+                    <label>4. தந்தை / கணவர் பெயர் (திருத்தப்பட்ட புதிய பெயர்):</label>
+                    <input type="text" id="relativeName" placeholder="உறவுமுறை பெயர்">
+                </div>
+
+                <div class="form-group">
+                    <label>5. சரியான பிறந்த தேதி (Date of Birth):</label>
+                    <input type="date" id="dob">
+                </div>
+                <div class="form-group">
+                    <label>6. உறவுமுறை வகை (Relationship Type):</label>
+                    <select id="relativeType">
+                        <option value="தந்தை">தந்தை (Father)</option>
+                        <option value="கணவர்">கணவர் (Husband)</option>
+                        <option value="தாய்">தாய் (Mother)</option>
+                    </select>
+                </div>
+
+                <div class="form-group full-width">
+                    <label>7. விண்ணப்பதாரர் ஆதார் எண் (விருப்பத்தேர்வு):</label>
+                    <input type="text" id="aadhaar" pattern="[0-9]{12}" placeholder="12 இலக்க எண்">
+                </div>
+
+                <div class="form-group full-width">
+                    <label>8. புதிய சரியான வீட்டு முகவரி (3 வரிசை அளவு):</label>
+                    <textarea id="address" rows="3" placeholder="புதிய கதவு எண், தெரு பெயர், கிராமம்/நகரம், அஞ்சல் குறியீட்டு எண்..."></textarea>
+                </div>
+
+                <div class="form-group full-width">
+                    <label>9. சட்டமன்றத் தொகுதி மற்றும் மாவட்டம்:</label>
+                    <input type="text" id="constituencyDetails" required placeholder="உதா: ஸ்ரீவைகுண்டம் தொகுதி, தூத்துக்குடி மாவட்டம்">
+                </div>
+            </div>
+
+            <button type="submit">💾 விபரங்களைச் சேமி & பிரிண்ட் எடு</button>
+        </form>
+    </div>
+
+    <!-- RIGHT: SIDEBAR -->
+    <div class="sidebar">
+        <h2>அச்சு வசதிகள்</h2>
+        <div class="blank-print-box">
+            <button type="button" class="btn-blank" onclick="printBlankForm()">🖨️ வெற்று படிவம் பிரிண்ட் (Blank Form)</button>
+        </div>
+
+        <h2>பதிவு செய்யப்பட்டவை</h2>
+        <input type="text" id="search" class="search-box" placeholder="EPIC எண் / போன் மூலம் தேட..." oninput="loadData()">
+        <div class="history-list" id="historyList"></div>
+    </div>
+
+    <!-- PRINT LAYOUT AREA -->
+    <div id="print-area">
+        <div class="page-1">
+            <div class="p-header">
+                <h1>வாக்காளர் பட்டியலில் விபரங்கள் திருத்தத்திற்கான விண்ணப்பப் படிவம் (படிவம் 8)</h1>
+            </div>
+
+            <table class="p-table">
+                <thead>
+                    <tr>
+                        <th style="width: 8%;">வ.எண்</th>
+                        <th style="width: 42%;">விண்ணப்ப விபரங்கள்</th>
+                        <th style="width: 50%;">பூர்த்தி செய்யப்பட்ட திருத்த விபரம்</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="text-align: center;">1.</td>
+                        <td>மாற்ற வேண்டிய விபரங்கள் (டிக் செய்க)</td>
+                        <td>
+                            <div class="p-checkbox-grid">
+                                <div class="p-checkbox-item"><span class="p-box" id="pChkName"></span> பெயர்</div>
+                                <div class="p-checkbox-item"><span class="p-box" id="pChkDob"></span> பிறந்தநாள்</div>
+                                <div class="p-checkbox-item"><span class="p-box" id="pChkRelative"></span> தந்தை/கணவர்</div>
+                                <div class="p-checkbox-item"><span class="p-box" id="pChkPhoto"></span> புகைப்படம்</div>
+                                <div class="p-checkbox-item"><span class="p-box" id="pChkAddress"></span> முகவரி</div>
+                                <div class="p-checkbox-item"><span class="p-box" id="pChkMobile"></span> செல் எண்</div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: center;">2.</td>
+                        <td>தற்போதைய வாக்காளர் அட்டை எண் (EPIC)</td>
+                        <td><strong id="pEpicNo" style="font-size: 1.1rem; letter-spacing: 1px;"></strong></td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: center;">3.</td>
+                        <td>கைபேசி எண் (Mobile No)</td>
+                        <td id="pPhone" style="font-weight: bold;"></td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: center;">4.</td>
+                        <td>விண்ணப்பதாரர் பெயர் (புதியது)</td>
+                        <td><strong id="pNameTa"></strong></td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: center;">5.</td>
+                        <td>தந்தை / கணவர் பெயர் (புதியது)</td>
+                        <td><span id="pRelativeName"></span> <strong id="pRelativeType" style="font-size:0.85rem;"></strong></td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: center;">6.</td>
+                        <td>பிறந்த தேதி / வயது (புதியது)</td>
+                        <td id="pDob" style="font-weight: bold;"></td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: center;">7.</td>
+                        <td>விண்ணப்பதாரர் ஆதார் எண்</td>
+                        <td><span id="pAadhaar" style="font-weight: bold;">[Aadhaar Redacted]</span></td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: center;">8.</td>
+                        <td>புதிய சரியான வீட்டு முகவரி</td>
+                        <!-- 3 வரிசைகளுக்கான பிரத்யேக கட்டம் -->
+                        <td id="pAddressContainer" style="height: 95px; padding: 4px 12px !important; vertical-align: top;">
+                            <!-- JS lines load here -->
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: center;">9.</td>
+                        <td>தொகுதி மற்றும் மாவட்டம்</td>
+                        <td id="pConstituencyDetails"></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="p-docs">
+                <strong>📋 திருத்தத்திற்கு இணைக்க வேண்டிய சான்றுகள் (நகல்கள்):</strong> பெயர்/பிறந்தநாள் மாற்றத்திற்கு (ஆதார் கார்டு/பான் கார்டு/பள்ளி சான்றிதழ்), முகவரி மாற்றத்திற்கு (ஸ்மார்ட் கார்டு/EB பில்/கேஸ் பில்), புகைப்படம் மாற்றத்திற்கு (1 புதிய கலர் போட்டோ).
+            </div>
+
+            <div class="p-decl">
+                <strong>சுய உறுதிமொழி:</strong> மேற்கண்ட வாக்காளர் பட்டியலில் உள்ள எனது விபரங்களை திருத்தம் செய்ய நான் அளித்த தகவல்கள் அனைத்தும் உண்மையானவை என உறுதியளிக்கிறேன்.
+            </div>
+
+            <div class="p-footer">
+                <div>தேதி / நாள் : <span id="pCurrentDate"></span></div>
+                <div>விண்ணப்பதாரரின் கையொப்பம் / ரேகை</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script {nonce}>
+        let db;
+        const request = indexedDB.open("VoterCorrectionDB", 1);
+        
+        request.onupgradeneeded = (e) => {
+            db = e.target.result;
+            if(!db.objectStoreNames.contains("correction_applications")) {
+                db.createObjectStore("correction_applications", { keyPath: "id", autoIncrement: true });
+            }
+        };
+        request.onsuccess = (e) => { db = e.target.result; loadData(); };
+
+        // Handle Submit
+        document.getElementById('voterCorrectionForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            let rawDob = document.getElementById('dob').value;
+            let formattedDob = rawDob ? rawDob.split('-').reverse().join('/') : '';
+
+            const record = {
+                epicNo: document.getElementById('epicNo').value.toUpperCase(),
+                phone: document.getElementById('phone').value,
+                nameTa: document.getElementById('nameTa').value,
+                relativeName: document.getElementById('relativeName').value,
+                relativeType: document.getElementById('relativeType').value,
+                dob: formattedDob,
+                aadhaar: document.getElementById('aadhaar').value,
+                address: document.getElementById('address').value,
+                constituencyDetails: document.getElementById('constituencyDetails').value,
+                // Checkbox status
+                chkName: document.getElementById('chkName').checked,
+                chkDob: document.getElementById('chkDob').checked,
+                chkRelative: document.getElementById('chkRelative').checked,
+                chkPhoto: document.getElementById('chkPhoto').checked,
+                chkAddress: document.getElementById('chkAddress').checked,
+                chkMobile: document.getElementById('chkMobile').checked,
+                date: new Date().toLocaleDateString('en-GB')
+            };
+
+            const tx = db.transaction("correction_applications", "readwrite");
+            tx.objectStore("correction_applications").add(record);
+            
+            tx.oncomplete = () => {
+                alert("திருத்த விபரங்கள் வெற்றிகரமாகச் சேமிக்கப்பட்டன!");
+                loadData();
+                printApplication(record, false);
+                document.getElementById('voterCorrectionForm').reset();
+                clearCheckboxes();
+            };
+        });
+
+        function clearCheckboxes() {
+            document.getElementById('chkName').checked = false;
+            document.getElementById('chkDob').checked = false;
+            document.getElementById('chkRelative').checked = false;
+            document.getElementById('chkPhoto').checked = false;
+            document.getElementById('chkAddress').checked = false;
+            document.getElementById('chkMobile').checked = false;
+        }
+
+        function loadData() {
+            const searchQ = document.getElementById('search').value.toLowerCase();
+            const list = document.getElementById('historyList');
+            list.innerHTML = "";
+
+            db.transaction("correction_applications", "readonly").objectStore("correction_applications").openCursor(null, "prev").onsuccess = (e) => {
+                const cursor = e.target.result;
+                if(cursor) {
+                    const v = cursor.value;
+                    if(v.epicNo.toLowerCase().includes(searchQ) || v.phone.includes(searchQ)) {
+                        const div = document.createElement('div');
+                        div.className = "history-item";
+                        div.onclick = () => printApplication(v, false);
+                        div.innerHTML = `
+                            <strong>EPIC: ${v.epicNo}</strong><br>
+                            <small>📱 போன்: ${v.phone} | 📅 தேதி: ${v.date}</small>
+                        `;
+                        list.appendChild(div);
+                    }
+                    cursor.continue();
+                }
+            };
+        }
+
+        function printApplication(v, isBlank = false) {
+            const addrContainer = document.getElementById('pAddressContainer');
+
+            // Reset checkboxes in print template
+            const boxes = ['pChkName', 'pChkDob', 'pChkRelative', 'pChkPhoto', 'pChkAddress', 'pChkMobile'];
+            boxes.forEach(b => document.getElementById(b).innerText = "");
+
+            if (isBlank) {
+                document.getElementById('pEpicNo').innerHTML = "&nbsp;";
+                document.getElementById('pPhone').innerHTML = "&nbsp;";
+                document.getElementById('pNameTa').innerHTML = "&nbsp;";
+                document.getElementById('pRelativeName').innerHTML = "&nbsp;";
+                document.getElementById('pRelativeType').innerHTML = "";
+                document.getElementById('pDob').innerHTML = "&nbsp;";
+                document.getElementById('pAadhaar').innerHTML = "&nbsp;";
+                document.getElementById('pConstituencyDetails').innerHTML = "&nbsp;";
+                document.getElementById('pCurrentDate').innerText = "____/____/________";
+
+                addrContainer.innerHTML = `
+                    <div class="address-lines">
+                        <div class="address-line"></div>
+                        <div class="address-line"></div>
+                        <div class="address-line"></div>
+                    </div>
+                `;
+            } else {
+                document.getElementById('pEpicNo').innerHTML = v.epicNo ? v.epicNo : '&nbsp;';
+                document.getElementById('pPhone').innerHTML = v.phone ? v.phone : '&nbsp;';
+                document.getElementById('pNameTa').innerHTML = v.nameTa ? v.nameTa : '&nbsp;';
+                document.getElementById('pRelativeName').innerHTML = v.relativeName ? v.relativeName : '&nbsp;';
+                document.getElementById('pRelativeType').innerHTML = v.relativeType ? `(${v.relativeType})` : '';
+                document.getElementById('pDob').innerHTML = v.dob ? v.dob : '&nbsp;';
+                document.getElementById('pAadhaar').innerHTML = v.aadhaar ? "[Aadhaar Redacted]" : '&nbsp;';
+                document.getElementById('pConstituencyDetails').innerHTML = v.constituencyDetails ? v.constituencyDetails : '&nbsp;';
+                document.getElementById('pCurrentDate').innerText = v.date || new Date().toLocaleDateString('en-GB');
+
+                // Set tick marks
+                if(v.chkName) document.getElementById('pChkName').innerText = "✓";
+                if(v.chkDob) document.getElementById('pChkDob').innerText = "✓";
+                if(v.chkRelative) document.getElementById('pChkRelative').innerText = "✓";
+                if(v.chkPhoto) document.getElementById('pChkPhoto').innerText = "✓";
+                if(v.chkAddress) document.getElementById('pChkAddress').innerText = "✓";
+                if(v.chkMobile) document.getElementById('pChkMobile').innerText = "✓";
+
+                addrContainer.innerHTML = `<div class="address-text-filled">${v.address ? v.address : '&nbsp;'}</div>`;
+            }
+
+            window.print();
+        }
+
+        function printBlankForm() {
+            printApplication(null, true);
+        }
+    </script>
+</body>
+</html>
